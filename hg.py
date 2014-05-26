@@ -17,7 +17,7 @@ class Coordinate():
         return str(self._x)+','+str(sel._y)
 
 class HG():
-    def __init__(self, x, y):
+    def __init__(self, world):
         self._world = world
         self._home = Coordinate (-1,-1)
         self._homeRange = 10
@@ -33,7 +33,7 @@ class HG():
         print('I am here: ', self._home)
 
     def doForage(self):
-        print('\tResources')
+        print('\tResources collected')
 
     def trackDemography(self):
         print('\tDemography')
@@ -53,8 +53,8 @@ class World():
         candidates = []
         for i in range (self._size):
             for j in range (self._size):
-                if self.ground[i][j] == cellTypes.eDune:
-                    candidates.append(Coordinaet(i,j))
+                if self._ground[i][j] == cellTypes.eDune:
+                    candidates.append(Coordinate(i,j))
         index = random.randint(0, len(candidates))
         return candidates[index]
 

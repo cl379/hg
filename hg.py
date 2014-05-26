@@ -1,6 +1,6 @@
+#!/usr/bin/python2.7
 
-
-
+import random
 
 def enum(**enums):
     """ converts a sequence of values to an C++ style enum """
@@ -9,91 +9,63 @@ def enum(**enums):
 cellTypes = enum(eDune=0, eWater=1, eInterdune=2)
 
 
-class HG(Agent):
-    newId = 0
+class Coordinate():
+    def __init__(self, x, y):
+        self._x = x
+        self._y = y
+    def __str__(self):
+        return str(self._x)+','+str(sel._y)
 
-    def __init__(self, ident):
-        Agent.__init__(self, ident)
+class HG():
+    def __init__(self, x, y):
+        self._world = world
+        self._home = Coordinate (-1,-1)
         self._homeRange = 10
-        # list of individuals. if value==-1 means that the individual is dead
-        # if value != -1 defines the current age of individual
-        self._population = []
-        self._population.append(15)
-        self._population.append(15)
-        self._starvationRate = 0
-        # shall we give them a surplus for the days in which they are moving?
-        self._surplus = 0
 
+    def step(self, step):
+        print('HG executing step: ', step)
+        self.settle()
+        self.doForage()
 
-
-
-
-    
-
-
-
+    def settle(self):
+        print('\tSettle')
+        self._home = self._world.getRandomDune()
+        print('I am here: ', self._home)
 
     def doForage(self):
+        print('\tResources')
+
+    def trackDemography(self):
+        print('\tDemography')
 
 
+class World():
+    def __init__(self, size):
+        self._size = size
+        self._ground = [[0 for x in range(size)] for x in range(size)]
+        for i in range(size):
+            for j in range(size):
+                cellType = random.randint(cellTypes.eDune, cellTypes.eInterdune)
+                self._ground[i][j] = cellType
 
- class MyWorld(World):
 
-     def createAgent(self):
-
-
-    """ Same as getRandomDune of the ap model."""
-    def establishHome(self):
+    def getRandomDune(self):
         candidates = []
-        index = Point2DInt(0, 0)       
-        for index._x in range(self.getBoundaries().left, self.getBoundaries().right+1):
-            for index._y in range(self.getBoundaries().top, self.getBoundaries().bottom+1):
-                # TODO preference to vicinity to water body
-
-                if self.getValue('ground', index) == cellTypes.eDune:
-                    candidates.append(index.clone())
-        index = random.randint(0, len(candidates) - 1)
+        for i in range (self._size):
+            for j in range (self._size):
+                if self.ground[i][j] == cellTypes.eDune:
+                    candidates.append(Coordinaet(i,j))
+        index = random.randint(0, len(candidates))
         return candidates[index]
 
-    def checkMortality(self):
-
-
-class MyWorldConfig():
-    def __init__(self):
-        self._size = SizeInt(0,0)
-        self._numSteps = 0
-
-        # climate
-        self._climateMean = 0
-        self._climateSd = 1
-        
-        # agents
-        self._initialPopulation = 0
-        self._locationTries = 10
-        self._requiredNeedsPercentage = 1.0
-
-        # biomass
-        self._biomassKgHa = 0
-        self._biomassCaKg = 0
-        self._reserve = 1.0
-
-
-
-
 def main():
-    parser = argparse.ArgumentParser()
-    logging.basicConfig(filename='rain.log', level=logging.INFO)
-    parser.add_argument('-x', '--config', default='config.xml', help='config file')
-    args = parser.parse_args()
-    config = MyWorldConfig()
-    config.deserialize(args.config)
-
-    mySimulation = Simulation(config._size, config._numSteps, config._serializeResolution)
-    myWorld = MyWorld(mySimulation, config)
-    myWorld.initialize()
-
-    myWorld.run()
-
+    size = 100
+    myWorld = World(size)
+    myHG = HG(myWorld)
+    timeSteps = 10
+    for i in range(timeSteps):
+        print('Executig time step: ', i)
+        myHG.step(i)
 
 if __name__ == "__main__":
     main()

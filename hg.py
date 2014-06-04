@@ -1,4 +1,4 @@
-#!/usr/bin/python3.4
+#!/usr/bin/python2
 
 import random
 
@@ -25,6 +25,7 @@ class HG():
         self._population = []
         self._population.append(15)
         self._population.append(15)
+        self._mobility = random.random()
 
     def __str__(self):
         return str(self._x)+','+str(self._y)
@@ -32,11 +33,14 @@ class HG():
     def step(self, step):
         print 'HG executing step: ', step
         self.settle()
-        self.trackDemography()
         self.doForage()
+        self.trackDemography()
+        
 
     def settle(self):
-        self._home = self._world.getRandomDune()
+        # if the value is lower than the set mobility attribute (0= never move, 1= always move) the agent moves
+        if random.random() < self._mobility:
+            self._home = self._world.getRandomDune()
         print 'I am here: ', self._home
 
     def trackDemography(self):
@@ -54,7 +58,7 @@ class HG():
             if mateIndex != -1:
                 newAgent = HG()
                 self._world.addAgent(newAgent)
-                if random.randint(0,1) ==0:
+                if random.randint(0,1) == 0:
                     newAgent._home = self._home
                 else:
                     newAgent._home - agent._home
@@ -62,6 +66,10 @@ class HG():
                 newAgent._population[1] = agent._population[mateIndex]
                 self._population[index] = -1
                 self._population[mateIndex] = -1
+                if random.random() < self.world._mutationRate:
+                    newAgent._mobility = random.random()
+                else:
+                    newAgent._mobility = (self._mobility + agent._mobility)/2.0
                 return True
         return False
 
@@ -73,20 +81,10 @@ class HG():
 
 
     def doForage(self):
-        for i in range(self._homeRange,1+self._homeRange):
-            for j in range(self._homeRange,1+self._homeRange):
-                location = Coordinate(i+self._home._x,j+self._home._y)
-                if not self._world.checkPosition(location):
-                    continue
-                if self._world._ground[location._x][location._y] == cellTypes.eInterdune:
-                    if self._world._groundState[location._x][location._y] != cellStates.eFull:
-                        self.searchFood
-        self.collectBiomass
+        
 
-    def searchFood(self):
-        return
-
-
+                
+        
     def collectBiomass(self):
         food = self._world._calories
         print('\tResources collected: ', food)

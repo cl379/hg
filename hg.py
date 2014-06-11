@@ -7,7 +7,6 @@ def enum(**enums):
     return type('Enum', (), enums)
 
 cellTypes = enum(eDune=0, eWater=1, eInterdune=2)
-cellStates = enum(eVisited=0, eEmpty=1, eFull=2)
 
 
 class Coordinate():
@@ -21,17 +20,19 @@ class HG():
     def __init__(self, world):
         self._world = world
         self._home = Coordinate (-1,-1)
+        self._currentPosition = Coordinate (0,0)
         self._homeRange = 50
         self._population = []
         self._population.append(15)
         self._population.append(15)
         self._mobility = random.random()
-
+        self._biomassNeeded = 100
+        
     def __str__(self):
-        return str(self._x)+','+str(self._y)
+        return str(self._x) + ',' + str(self._y)
 
     def step(self, step):
-        print 'HG executing step: ', step
+        print('HG executing step: ', step)
         self.settle()
         self.doForage()
         self.trackDemography()
@@ -42,15 +43,31 @@ class HG():
         if random.random() < self._mobility:
             self._home = self._world.getRandomDune()
         print 'I am here: ', self._home
+        print self._mobility
 
     def trackDemography(self):
         for i in range(len(self._population)):
-            if i>1 and self._population[i]>=15:
-                self.createAgent(i)
-            self._population[i] = self._population[i]+1
-        if random.randint(0, 1) == 1:
+            if self._population[i] == -1:
+                continue
+            newAgent = False
+            if i > 1 and self._population[i] >= 15:
+                newAgent = self.createAgent(i)
+            if newAgent == False:
+                self._population[i] = self._population[i]+1
+        if random.randint(0, 1) == 1 and self._population[0] != -1 and self._population[1] != -1:
             self._population.append(0)
         print '\tDemography: ', self._population
+
+        if self.getNumberOfIndividuals() > 0:
+            return
+        self.remove()
+
+    def getNumberOfIndividuals(self):
+        individuals = 0
+        for i in range(len(self._population)):
+            if self._population[i] != -1:
+                individuals = individuals + 1
+        return individuals
 
     def createAgent(self, index):
         for agent in self._world._agents:
@@ -81,15 +98,13 @@ class HG():
 
 
     def doForage(self):
-        
-
-                
-        
-    def collectBiomass(self):
-        food = self._world._calories
-        print('\tResources collected: ', food)
-        return
-
+        food = self._world._calories[self._currentPosition._x][self._currentPosition._y]
+        while food < self._biomassNeeded:
+            for currentHomeRange in range(0, self._homeRange):
+                food = food + self._world._calories[self._currentPosition._x][self._currentPosition._y]
+            print('food collected: ', self._world._calories)
+        else:
+            print 'enough food collected'
 
 
 class World():
@@ -97,12 +112,13 @@ class World():
         self._size = size
         self._ground = [[0 for x in range(size)] for x in range(size)]
         self._groundState = [[0 for x in range(size)] for x in range(size)]
-        self._calories = [[0 for x in range(size)] for x in range(size)]
+        self._calories = [[100 for x in range(size)] for x in range(size)]
         for i in range(size):
             for j in range(size):
                 cellType = random.randint(cellTypes.eDune, cellTypes.eInterdune)
                 self._ground[i][j] = cellType
         self._agents = []
+        self._mutationRate = 0.1
 
     def addAgent(self, agent):
         self._agents.append(agent)
@@ -131,7 +147,7 @@ def main():
     myHG = HG(myWorld)
     timeSteps = 50
     for i in range(timeSteps):
-        print('Executig time step: ', i)
+        print('Executing time step: ', i)
         myHG.step(i)
 
 if __name__ == "__main__":
